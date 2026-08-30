@@ -4,6 +4,12 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css"; // 👈 เพิ่มบรรทัดนี้ลงไป
 
+// โหลดฟอนต์ Italiana จาก Google Fonts สำหรับหัวข้อ
+const fontLink = document.createElement("link");
+fontLink.rel = "stylesheet";
+fontLink.href = "https://fonts.googleapis.com/css2?family=Italiana&display=swap";
+document.head.appendChild(fontLink);
+
 // ============================================================
 // MARKDOWN RENDERER — ไม่ต้องติดตั้ง library เพิ่ม
 // รองรับ: **bold**, *italic*, `code`, ~~strikethrough~~, \n
@@ -57,7 +63,7 @@ const QUIZ_SETS = [
 
 const DEFAULT_THEME = {
   logoEmoji:"⚔", themeColor:"#d4af37", fontSize:"22px",
-  bgColor:"#0d0803", bgImageUrl:"",
+  bgColor:"#04352f", bgImageUrl:"",
 };
 
 function getSetFromUrl() {
@@ -273,8 +279,8 @@ function SetSelectScreen({ onSelect, theme }) {
         boxShadow:"0 20px 60px rgba(0,0,0,.8)",position:"relative",zIndex:1}}>
         <div style={{textAlign:"center",marginBottom:"24px"}}>
           <div style={{fontSize:"44px",marginBottom:"8px"}}>{theme.logoEmoji}</div>
-          <h1 style={{fontFamily:"'Cinzel Decorative',serif",color:tc,fontSize:theme.fontSize,
-            margin:"0 0 4px",textShadow:`0 0 20px ${tc}44`}}>R U Ready? Let's GO</h1>
+          <h1 style={{fontFamily:"'Italiana',serif",letterSpacing:"2px",color:tc,fontSize:theme.fontSize,
+            margin:"0 0 4px",textShadow:`0 0 20px ${tc}44`}}>DIVE IN!</h1>
           <p style={{color:"#8b7355",fontFamily:"'Cinzel',serif",fontSize:"11px",margin:0}}>Admin — เลือกชุดข้อสอบ</p>
         </div>
         <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 ค้นหา..."
@@ -351,10 +357,10 @@ function LoginScreen({ set, onConfirm, onBack, isDirectLink, theme, isChallenge,
               : <div style={{fontSize:"44px",lineHeight:1}}>{theme.logoEmoji}</div>
             }
           </div>
-          <h1 style={{fontFamily:"'Cinzel Decorative',serif",
+          <h1 style={{fontFamily:"'Italiana',serif",letterSpacing:"2px",
             color:isChallenge?"#e74c3c":tc,fontSize:theme.fontSize,
             margin:"0 0 4px",textShadow:`0 0 20px ${isChallenge?"rgba(231,76,60,.4)":tc+"44"}`}}>
-            {isChallenge?"Challenge Mode":"R U Ready? Let's GO"}
+            {isChallenge?"Challenge Mode":"DIVE IN!"}
           </h1>
           <p style={{color:"#8b7355",fontFamily:"'Cinzel',serif",fontSize:"12px",margin:0}}>
             {isChallenge?(challengeLabel||set.id):`${set.id} · ${set.total}ข้อ · ผ่าน ${set.passingScore} คะแนน`}
@@ -1349,7 +1355,7 @@ export default function App() {
   const tc=theme.themeColor;
   const bg=theme.bgImageUrl
     ?`url(${theme.bgImageUrl}) center/cover fixed, ${theme.bgColor}`
-    :`radial-gradient(ellipse at 20% 50%,rgba(55,32,8,.45) 0%,transparent 60%),${theme.bgColor}`;
+    :`radial-gradient(ellipse at 20% 50%,rgba(8,90,79,.45) 0%,transparent 60%),${theme.bgColor}`;
 
   if(screen==="init") return <div style={{minHeight:"100vh",background:theme.bgColor}}/>;
 
