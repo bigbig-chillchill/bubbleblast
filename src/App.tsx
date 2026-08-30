@@ -441,7 +441,7 @@ function McChoices({ shuffled, selNow, onSelect, tc, disabled=false, correctOrig
               border:"none",display:"flex",alignItems:"center",justifyContent:"center",
               fontSize:"12px",fontWeight:700,fontFamily:"'Cinzel',serif",
               color:showAnswer?(isCorrectChoice?"#27ae60":isWrongSelected?"#e74c3c":"#4a3a20"):(sel?"#1a0e00":"#8b7355")}}>
-              {["ก","ข","ค","ง"][si]}
+              {["A","B","C","D"][si]}
             </span>
             {/* ✅ ตัวเลือกรองรับ Markdown */}
             <span style={{flex:1}}><MdText>{choice.text}</MdText></span>
