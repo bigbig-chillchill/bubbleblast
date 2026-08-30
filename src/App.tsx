@@ -46,10 +46,10 @@ function QuestionText({ text }) {
 // ============================================================
 
 const APPS_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbwtjTq25C0pURGGNsPMJ76iAbpzM3R9awJmswQUsQb1NrEG790gZc-_gsvPoXOTcCab/exec";
+  "https://script.google.com/macros/s/AKfycbxGD7qVn_vixolcHeW2dzz3Yyqpi51_QHV2Ogyp3X8FNs4itQ45Gfh2bSI3fpYoF6z_IA/exec";
 
 const LOOKER_STUDIO_URL =
-  "https://datastudio.google.com/reporting/c1d52161-5387-4f00-bcda-b70b54116fc5/page/p_h1rlukz72d";
+  "https://datastudio.google.com/reporting/8b3819f8-888e-4948-b006-9a7973aa5724";
 
 const QUIZ_SETS = [
   { id:"EQ-BASIC5", name:"สมการ ป.6 เข้า ม.1 สมการ เงิน คน สัตว์", total:10, passingScore:8, timeLimit:30*60 },
