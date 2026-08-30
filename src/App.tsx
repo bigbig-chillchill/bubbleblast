@@ -274,7 +274,7 @@ function SetSelectScreen({ onSelect, theme }) {
         <div style={{textAlign:"center",marginBottom:"24px"}}>
           <div style={{fontSize:"44px",marginBottom:"8px"}}>{theme.logoEmoji}</div>
           <h1 style={{fontFamily:"'Cinzel Decorative',serif",color:tc,fontSize:theme.fontSize,
-            margin:"0 0 4px",textShadow:`0 0 20px ${tc}44`}}>R U Ready?</h1>
+            margin:"0 0 4px",textShadow:`0 0 20px ${tc}44`}}>R U Ready? Let's GO</h1>
           <p style={{color:"#8b7355",fontFamily:"'Cinzel',serif",fontSize:"11px",margin:0}}>Admin — เลือกชุดข้อสอบ</p>
         </div>
         <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 ค้นหา..."
@@ -354,7 +354,7 @@ function LoginScreen({ set, onConfirm, onBack, isDirectLink, theme, isChallenge,
           <h1 style={{fontFamily:"'Cinzel Decorative',serif",
             color:isChallenge?"#e74c3c":tc,fontSize:theme.fontSize,
             margin:"0 0 4px",textShadow:`0 0 20px ${isChallenge?"rgba(231,76,60,.4)":tc+"44"}`}}>
-            {isChallenge?"Challenge Mode":"R U Ready?"}
+            {isChallenge?"Challenge Mode":"R U Ready? Let's GO"}
           </h1>
           <p style={{color:"#8b7355",fontFamily:"'Cinzel',serif",fontSize:"12px",margin:0}}>
             {isChallenge?(challengeLabel||set.id):`${set.id} · ${set.total}ข้อ · ผ่าน ${set.passingScore} คะแนน`}
