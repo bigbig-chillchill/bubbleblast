@@ -51,15 +51,12 @@ function QuestionText({ text }) {
 
 // ============================================================
 
+
 const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbxGD7qVn_vixolcHeW2dzz3Yyqpi51_QHV2Ogyp3X8FNs4itQ45Gfh2bSI3fpYoF6z_IA/exec";
 
 const LOOKER_STUDIO_URL =
   "https://datastudio.google.com/reporting/8b3819f8-888e-4948-b006-9a7973aa5724";
-
-const QUIZ_SETS = [
-  { id:"ENG-BASIC1", name:"English Is EASY 1", total:30, passingScore:24, timeLimit:30*60 },
-];
 
 const DEFAULT_THEME = {
   logoEmoji:"⚔", themeColor:"#d4af37", fontSize:"22px",
