@@ -4,12 +4,6 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css"; // 👈 เพิ่มบรรทัดนี้ลงไป
 
-// โหลดฟอนต์ Italiana จาก Google Fonts สำหรับหัวข้อ
-const fontLink = document.createElement("link");
-fontLink.rel = "stylesheet";
-fontLink.href = "https://fonts.googleapis.com/css2?family=Italiana&display=swap";
-document.head.appendChild(fontLink);
-
 // ============================================================
 // MARKDOWN RENDERER — ไม่ต้องติดตั้ง library เพิ่ม
 // รองรับ: **bold**, *italic*, `code`, ~~strikethrough~~, \n
@@ -50,6 +44,7 @@ function QuestionText({ text }) {
 }
 
 // ============================================================
+
 
 const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbxGD7qVn_vixolcHeW2dzz3Yyqpi51_QHV2Ogyp3X8FNs4itQ45Gfh2bSI3fpYoF6z_IA/exec";
@@ -267,9 +262,9 @@ function ChallengeLogo({ logoImageUrl, logoEmoji, size=52 }) {
   return <div style={{fontSize:size+"px",textAlign:"center",lineHeight:1}}>{logoEmoji||"⚡"}</div>;
 }
 
-function SetSelectScreen({ onSelect, theme }) {
+function SetSelectScreen({ quizSets, onSelect, theme }: any) {
   const [search,setSearch]=useState("");
-  const filtered=QUIZ_SETS.filter(s=>s.name.includes(search)||s.id.includes(search));
+  const filtered = quizSets.filter((s: any) => s.name.includes(search) || s.id.includes(search));
   const tc=theme.themeColor;
   return (
     <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
@@ -279,7 +274,7 @@ function SetSelectScreen({ onSelect, theme }) {
         boxShadow:"0 20px 60px rgba(0,0,0,.8)",position:"relative",zIndex:1}}>
         <div style={{textAlign:"center",marginBottom:"24px"}}>
           <div style={{fontSize:"44px",marginBottom:"8px"}}>{theme.logoEmoji}</div>
-          <h1 style={{fontFamily:"'Italiana',serif",letterSpacing:"2px",color:tc,fontSize:theme.fontSize,
+          <h1 style={{fontFamily:"'Cinzel Decorative',serif",color:tc,fontSize:theme.fontSize,
             margin:"0 0 4px",textShadow:`0 0 20px ${tc}44`}}>DIVE IN!</h1>
           <p style={{color:"#8b7355",fontFamily:"'Cinzel',serif",fontSize:"11px",margin:0}}>Admin — เลือกชุดข้อสอบ</p>
         </div>
@@ -287,29 +282,47 @@ function SetSelectScreen({ onSelect, theme }) {
           style={{width:"100%",boxSizing:"border-box",background:`${tc}11`,border:`1px solid ${tc}44`,
             borderRadius:"8px",padding:"10px 14px",color:"#f5e6c8",
             fontFamily:"'Sarabun',sans-serif",fontSize:"15px",outline:"none",marginBottom:"14px"}}/>
-        <div style={{display:"flex",flexDirection:"column",gap:"8px",maxHeight:"400px",overflowY:"auto"}}>
-          {filtered.map(set=>(
-            <button key={set.id} onClick={()=>onSelect(set)} style={{
-              background:`${tc}08`,border:`1px solid ${tc}33`,borderRadius:"10px",
-              padding:"13px 16px",cursor:"pointer",textAlign:"left",
-              display:"flex",justifyContent:"space-between",alignItems:"center",transition:"all .2s"}}>
-              <div>
-                <div style={{color:"#f5e6c8",fontFamily:"'Sarabun',sans-serif",fontSize:"15px",fontWeight:600}}>{set.name}</div>
-                <div style={{color:"#6b5a3e",fontSize:"12px",fontFamily:"'Cinzel',serif",marginTop:"2px"}}>
-                  {set.id} · {set.total}ข้อ · {set.timeLimit/60}นาที · ผ่าน {set.passingScore} คะแนน
+        
+        {filtered.length === 0 ? (
+          <Spinner color={tc}/>
+        ) : (
+          <div style={{display:"flex",flexDirection:"column",gap:"8px",maxHeight:"400px",overflowY:"auto"}}>
+            {filtered.map((set: any)=>(
+              <button key={set.id} onClick={()=>onSelect(set)} style={{
+                background:`${tc}08`,border:`1px solid ${tc}33`,borderRadius:"10px",
+                padding:"13px 16px",cursor:"pointer",textAlign:"left",
+                display:"flex",justifyContent:"space-between",alignItems:"center",transition:"all .2s"}}>
+                <div>
+                  <div style={{color:"#f5e6c8",fontFamily:"'Sarabun',sans-serif",fontSize:"15px",fontWeight:600}}>{set.name}</div>
+                  <div style={{color:"#6b5a3e",fontSize:"12px",fontFamily:"'Cinzel',serif",marginTop:"2px"}}>
+                    {set.id} · {set.total}ข้อ · {set.timeLimit/60}นาที · ผ่าน {set.passingScore} คะแนน
+                  </div>
+                  <div style={{color:"#3a6a3a",fontSize:"11px",fontFamily:"'Courier New',monospace",marginTop:"3px"}}>?set={set.id}</div>
                 </div>
-                <div style={{color:"#3a6a3a",fontSize:"11px",fontFamily:"'Courier New',monospace",marginTop:"3px"}}>?set={set.id}</div>
-              </div>
-              <span style={{color:tc,fontSize:"22px"}}>›</span>
-            </button>
-          ))}
-        </div>
+                <span style={{color:tc,fontSize:"22px"}}>›</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function LoginScreen({ set, onConfirm, onBack, isDirectLink, theme, isChallenge, challengeConfig, challengeLabel }) {
+function LoginScreen({ 
+  theme, 
+  set,
+  selectedSet, 
+  isChallenge, 
+  isDirectLink,
+  challengeConfig,
+  challengeLabel,
+  cachedConfig, 
+  prefetchedQuestionsRef, 
+  apiGet,
+  onConfirm,
+  onBack
+}: any) {
   const [sid,setSid]=useState("");
   const [student,setStudent]=useState(null);
   const [loading,setLoading]=useState(false);
@@ -327,17 +340,33 @@ function LoginScreen({ set, onConfirm, onBack, isDirectLink, theme, isChallenge,
       isCancelled = true;
     };
   }, []);
-  const tc=theme.themeColor;
-  const lookup=async()=>{
-    if(!sid.trim()) return;
-    setLoading(true); setError(""); setStudent(null);
-    try {
-      const data=await apiGet({ action:"getStudent", studentId:sid.trim() });
-      if(data.error) setError(data.error);
-      else setStudent(data.student);
-    } catch { setError("เชื่อมต่อระบบไม่ได้ กรุณาลองใหม่"); }
-    setLoading(false);
-  };
+const tc=theme.themeColor;
+const lookup=async()=>{
+  if(!sid.trim()) return;
+  setLoading(true); setError(""); setStudent(null);
+  try {
+    const data=await apiGet({ action:"getStudent", studentId:sid.trim() });
+    if(data.error) {
+      setError(data.error);
+    } else {
+      setStudent(data.student);
+      // ✅ เริ่ม prefetch ข้อสอบทันทีที่เจอนักเรียน (ไม่รอให้กด "ใช่คือฉัน")
+      if (!isChallenge && selectedSet?.id) {
+        Promise.all([
+          apiGet({ action: "getQuestions", setName: selectedSet.id }),
+          cachedConfig
+            ? Promise.resolve({ config: cachedConfig })
+            : apiGet({ action: "getConfig", setId: selectedSet.id }),
+        ]).then(results => {
+          prefetchedQuestionsRef.current = results;
+        }).catch(() => {});
+      }
+    }
+  } catch { 
+    setError("เชื่อมต่อระบบไม่ได้ กรุณาลองใหม่"); 
+  }
+  setLoading(false);
+};
   return (
     <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
       <div style={{maxWidth:"460px",width:"100%",
@@ -357,7 +386,7 @@ function LoginScreen({ set, onConfirm, onBack, isDirectLink, theme, isChallenge,
               : <div style={{fontSize:"44px",lineHeight:1}}>{theme.logoEmoji}</div>
             }
           </div>
-          <h1 style={{fontFamily:"'Italiana',serif",letterSpacing:"2px",
+          <h1 style={{fontFamily:"'Cinzel Decorative',serif",
             color:isChallenge?"#e74c3c":tc,fontSize:theme.fontSize,
             margin:"0 0 4px",textShadow:`0 0 20px ${isChallenge?"rgba(231,76,60,.4)":tc+"44"}`}}>
             {isChallenge?"Challenge Mode":"DIVE IN!"}
@@ -418,10 +447,10 @@ function LoginScreen({ set, onConfirm, onBack, isDirectLink, theme, isChallenge,
 }
 
 // ── MC Choices — รองรับ Markdown ในตัวเลือก ──────────────
-function McChoices({ shuffled, selNow, onSelect, tc, disabled=false, correctOrigIndex=null, showAnswer=false }) {
+const McChoices = React.memo(function McChoices({ shuffled, selNow, onSelect, tc, disabled=false, correctOrigIndex=null, showAnswer=false }: any) {
   return (
     <div style={{display:"flex",flexDirection:"column",gap:"9px"}}>
-      {shuffled.map((choice,si)=>{
+      {shuffled.map((choice: any, si: number)=>{
         const sel=selNow===si;
         const isCorrectChoice=showAnswer&&choice.origIndex===correctOrigIndex;
         const isWrongSelected=showAnswer&&sel&&!isCorrectChoice;
@@ -447,9 +476,8 @@ function McChoices({ shuffled, selNow, onSelect, tc, disabled=false, correctOrig
               border:"none",display:"flex",alignItems:"center",justifyContent:"center",
               fontSize:"12px",fontWeight:700,fontFamily:"'Cinzel',serif",
               color:showAnswer?(isCorrectChoice?"#27ae60":isWrongSelected?"#e74c3c":"#4a3a20"):(sel?"#1a0e00":"#8b7355")}}>
-              {["A","B","C","D"][si]}
+              {["ก","ข","ค","ง"][si]}
             </span>
-            {/* ✅ ตัวเลือกรองรับ Markdown */}
             <span style={{flex:1}}><MdText>{choice.text}</MdText></span>
             {showAnswer&&isCorrectChoice&&<span style={{fontSize:"14px"}}>✓</span>}
             {showAnswer&&isWrongSelected&&<span style={{fontSize:"14px"}}>✗</span>}
@@ -458,9 +486,41 @@ function McChoices({ shuffled, selNow, onSelect, tc, disabled=false, correctOrig
       })}
     </div>
   );
-}
+});
+
+const NavButton = React.memo(function NavButton({ index, isActive, isAnswered, pts, questionType, tc, onPress }: any) {
+  const handlePress = () => onPress(index);
+
+  return (
+    <div onClick={handlePress} style={{
+      minWidth:"24px",height:"24px",borderRadius:"5px",cursor:"pointer",padding:"0 3px",
+      background:isActive?tc:isAnswered?tc+"55":"rgba(255,255,255,.06)",
+      border:isActive?`2px solid ${tc}`:`1px solid ${tc}33`,
+      display:"flex",alignItems:"center",justifyContent:"center",
+      fontSize:"9px",fontWeight:700,color:isActive?"#1a0e00":"#8b7355",
+      transition:"all .15s",gap:"1px"}}>
+      {questionType==="text"?"✏":index+1}
+      {pts>1&&<span style={{fontSize:"8px",color:isActive?"#1a0e00":tc}}>×{pts}</span>}
+    </div>
+  );
+});
 
 function TextInput({ value, onChange, tc, disabled=false }) {
+  // 1. เก็บค่าที่กำลังพิมพ์ไว้ใน Local state
+  const [localValue, setLocalValue] = useState(value || "");
+
+  // 2. ถ้าย้ายข้อ (value จากแม่เปลี่ยน) ให้รีเซ็ตช่องพิมพ์ตามข้อนั้น
+  useEffect(() => {
+    setLocalValue(value || "");
+  }, [value]);
+
+  // 3. ฟังก์ชันอัปเดตไปที่คอมโพเนนต์แม่เมื่อพิมพ์เสร็จ
+  const handleSave = () => {
+    if (!disabled && localValue !== value) {
+      onChange(localValue);
+    }
+  };
+
   return (
     <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
       <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
@@ -470,18 +530,28 @@ function TextInput({ value, onChange, tc, disabled=false }) {
         </span>
       </div>
       <div style={{position:"relative"}}>
-        <input type="text" inputMode="decimal" value={value}
-          onChange={e=>!disabled&&onChange(e.target.value)} disabled={disabled}
+        <input type="text" inputMode="decimal" value={localValue}
+          // อัปเดตแค่ตัวมันเอง หน้าจอหลักไม่ re-render
+          onChange={e => !disabled && setLocalValue(e.target.value)} 
+          // อัปเดตแม่เมื่อผู้ใช้คลิกไปที่อื่น (คลิกออก)
+          onBlur={handleSave} 
+          // อัปเดตแม่เมื่อผู้ใช้กด Enter ที่คีย์บอร์ด
+          onKeyDown={e => {
+            if (e.key === "Enter") handleSave();
+          }}
+          disabled={disabled}
           placeholder="พิมพ์คำตอบที่นี่ เช่น 7.5"
           style={{width:"100%",boxSizing:"border-box",
-            background:value?`${tc}11`:"rgba(255,255,255,.03)",
-            border:value?`2px solid ${tc}`:`1px solid ${tc}33`,
+            background:localValue?`${tc}11`:"rgba(255,255,255,.03)",
+            border:localValue?`2px solid ${tc}`:`1px solid ${tc}33`,
             borderRadius:"12px",padding:"18px 20px",color:"#f5e6c8",
             fontFamily:"'Sarabun',sans-serif",fontSize:"22px",outline:"none",
             textAlign:"center",letterSpacing:"2px",transition:"all .2s",
-            boxShadow:value?`0 0 20px ${tc}22`:"none",opacity:disabled?.7:1}}/>
-        {value&&!disabled&&(
-          <button onClick={()=>onChange("")} style={{position:"absolute",right:"12px",top:"50%",
+            boxShadow:localValue?`0 0 20px ${tc}22`:"none",opacity:disabled?.7:1}}/>
+        
+        {/* ปุ่มกากบาทลบข้อความ */}
+        {localValue&&!disabled&&(
+          <button onClick={() => { setLocalValue(""); onChange(""); }} style={{position:"absolute",right:"12px",top:"50%",
             transform:"translateY(-50%)",background:"none",border:"none",color:"#6b5a3e",
             fontSize:"18px",cursor:"pointer",padding:"4px",lineHeight:1}}>×</button>
         )}
@@ -592,19 +662,53 @@ function AnswerRow({ r, i, tc }) {
   );
 }
 
+const TimerDisplay = React.memo(({ initialTime, tc, onTimeUp }: any) => {
+  const [timeLeft, setTimeLeft] = useState(initialTime);
+
+  useEffect(() => {
+    const timerId = setInterval(() => {
+      setTimeLeft((prev: number) => {
+        if (prev <= 1) {
+          clearInterval(timerId);
+          onTimeUp();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timerId);
+  }, [onTimeUp]);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", width: "100%" }}>
+      <span style={{fontFamily:"'Courier New',monospace",fontSize:"22px",fontWeight:700,
+        color:timeLeft<60?"#e74c3c":timeLeft<180?"#e67e22":tc,
+        textShadow:timeLeft<60?"0 0 10px rgba(231,76,60,.7)":"none", marginBottom:"6px"}}>
+        ⏱ {formatTime(timeLeft)}
+      </span>
+      <TimerBar timeLeft={timeLeft} totalTime={initialTime} color={tc} />
+    </div>
+  );
+});
+
 function QuizScreen({ set, student, questions, onFinish, theme }) {
   const [current,setCurrent]=useState(0);
   const [answers,setAnswers]=useState({});
-  const [timeLeft,setTimeLeft]=useState(set.timeLimit);
-  const timerRef=useRef(null);
+  
+  // ใช้ useRef จับเวลาแทนวิธีเก่า
+  const startTimeRef = useRef(Date.now());
   const tc=theme.themeColor;
   const maxScore=calcMaxScore(questions);
+  
   const [allShuffled]=useState(()=>
     questions.map(q=>q.questionType==="text"?[]:shuffle(q.choices.map((c,i)=>({text:c,origIndex:i}))))
   );
+
   const finish=useCallback((timeUp=false)=>{
-    clearInterval(timerRef.current);
-    const timeUsed=set.timeLimit-timeLeft;
+    // คำนวณเวลาที่ใช้จริงจาก Date.now()
+    let timeUsed=Math.floor((Date.now()-startTimeRef.current)/1000);
+    if(timeUsed>set.timeLimit) timeUsed=set.timeLimit;
+
     const results=questions.map((q,qi)=>{
       const shuffled=allShuffled[qi], ans=answers[qi]??null;
       if(q.questionType==="text"){
@@ -616,14 +720,7 @@ function QuizScreen({ set, student, questions, onFinish, theme }) {
       }
     });
     onFinish({results,timeUsed,timeUp,student,set,maxScore});
-  },[answers,timeLeft]);
-
-  useEffect(()=>{
-    timerRef.current=setInterval(()=>{
-      setTimeLeft(t=>{ if(t<=1){clearInterval(timerRef.current);finish(true);return 0;} return t-1; });
-    },1000);
-    return()=>clearInterval(timerRef.current);
-  },[finish]);
+  },[answers, questions, set, student, maxScore, allShuffled]);
 
   useEffect(()=>{
     if(questions[current]?.questionType==="text")
@@ -634,39 +731,46 @@ function QuizScreen({ set, student, questions, onFinish, theme }) {
   const shuffled=allShuffled[current];
   const selNow=answers[current]??(q.questionType==="text"?"":null);
   const answered=Object.keys(answers).filter(k=>answers[k]!==null&&answers[k]!=="").length;
+  const handleSelectChoice = useCallback((si: number) => {
+    setAnswers((a: any) => ({ ...a, [current]: si }));
+  }, [current]);
+  const handleNavigate = useCallback((index: number) => {
+    setCurrent(index);
+  }, []);
 
   return (
     <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",
       padding:"12px",maxWidth:"720px",margin:"0 auto",position:"relative",zIndex:1}}>
       <div style={{background:"rgba(15,8,2,.92)",border:`1px solid ${tc}44`,
         borderRadius:"12px",padding:"10px 14px",marginBottom:"12px"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"6px"}}>
-          <span style={{color:"#8b7355",fontFamily:"'Cinzel',serif",fontSize:"12px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:"6px"}}>
+          <span style={{color:"#8b7355",fontFamily:"'Cinzel',serif",fontSize:"12px",marginBottom:"10px"}}>
             {student.nickname} · ข้อ <b style={{color:tc}}>{current+1}</b>/{questions.length}
             <span style={{color:tc,marginLeft:"8px",fontSize:"11px"}}>({answered}/{questions.length} ข้อ)</span>
           </span>
-          <span style={{fontFamily:"'Courier New',monospace",fontSize:"22px",fontWeight:700,
-            color:timeLeft<60?"#e74c3c":timeLeft<180?"#e67e22":tc,
-            textShadow:timeLeft<60?"0 0 10px rgba(231,76,60,.7)":"none"}}>
-            ⏱ {formatTime(timeLeft)}
-          </span>
+          <div style={{ width: "150px" }}>
+            <TimerDisplay 
+              initialTime={set.timeLimit} 
+              tc={tc} 
+              onTimeUp={() => finish(true)} 
+            />
+          </div>
         </div>
-        <TimerBar timeLeft={timeLeft} totalTime={set.timeLimit} color={tc}/>
-        <div style={{display:"flex",gap:"3px",marginTop:"8px",flexWrap:"wrap"}}>
-          {questions.map((qs,i)=>{
+       <div style={{display:"flex",gap:"3px",marginTop:"8px",flexWrap:"wrap"}}>
+          {questions.map((qs: any, i: number)=>{
             const isAnswered=answers[i]!==undefined&&answers[i]!==null&&answers[i]!=="";
             const pts=qs.points??1;
             return (
-              <div key={i} onClick={()=>setCurrent(i)} style={{
-                minWidth:"24px",height:"24px",borderRadius:"5px",cursor:"pointer",padding:"0 3px",
-                background:i===current?tc:isAnswered?tc+"55":"rgba(255,255,255,.06)",
-                border:i===current?`2px solid ${tc}`:`1px solid ${tc}33`,
-                display:"flex",alignItems:"center",justifyContent:"center",
-                fontSize:"9px",fontWeight:700,color:i===current?"#1a0e00":"#8b7355",
-                transition:"all .15s",gap:"1px"}}>
-                {qs.questionType==="text"?"✏":i+1}
-                {pts>1&&<span style={{fontSize:"8px",color:i===current?"#1a0e00":tc}}>×{pts}</span>}
-              </div>
+              <NavButton
+                key={i}
+                index={i}
+                isActive={i===current}
+                isAnswered={isAnswered}
+                pts={pts}
+                questionType={qs.questionType}
+                tc={tc}
+                onPress={handleNavigate}
+              />
             );
           })}
         </div>
@@ -683,14 +787,18 @@ function QuizScreen({ set, student, questions, onFinish, theme }) {
               fontFamily:"'Cinzel',serif",boxShadow:"0 0 10px rgba(155,89,182,.5)"}}>✦ โจทย์หายาก</span>
           )}
         </div>
-        {/* ✅ ใช้ QuestionBox ที่รองรับ Markdown */}
         <QuestionBox q={q} current={current} tc={tc}/>
         {q.questionType==="text"?(
           <div onKeyDown={e=>e.key==="Enter"&&current<questions.length-1&&setCurrent(c=>c+1)}>
             <TextInput value={selNow||""} onChange={val=>setAnswers(a=>({...a,[current]:val}))} tc={tc}/>
           </div>
         ):(
-          <McChoices shuffled={shuffled} selNow={selNow} onSelect={si=>setAnswers(a=>({...a,[current]:si}))} tc={tc}/>
+          <McChoices 
+            shuffled={shuffled} 
+            selNow={selNow} 
+            onSelect={handleSelectChoice} 
+            tc={tc}
+          />
         )}
       </div>
 
@@ -1266,6 +1374,7 @@ function ChallengeResultScreen({ data, onRetry, onHome, theme }) {
 
 export default function App() {
   const [screen,setScreen]=useState("init");
+  const [quizSets, setQuizSets] = useState([]); 
   const [selectedSet,setSet]=useState(null);
   const [student,setStudent]=useState(null);
   const [questions,setQuestions]=useState([]);
@@ -1277,68 +1386,105 @@ export default function App() {
   const [challengePool,setChallengePool]=useState([]);
   const [challengeResult,setChallengeResult]=useState(null);
   const [cachedConfig, setCachedConfig] = useState(null);
+  const prefetchedQuestionsRef = useRef<any>(null);
   const isDirectLink=!!getSetFromUrl();
   const isChallenge=mode==="challenge";
 
-  useEffect(()=>{
+useEffect(() => {
+    apiGet({ action: "getQuizSets" })
+      .then(data => {
+        if (data.sets && data.sets.length > 0) {
+          setQuizSets(data.sets);
+        }
+      })
+      .catch(() => {});
+  }, []);
+  
+useEffect(()=>{
     const setId=getSetFromUrl();
     if(setId){
-    apiGet({action:"getConfig",setId}).then(d=>{ 
-      if(d.config) {
-        setTheme(buildTheme(d.config)); 
-        setCachedConfig(d.config); 
-      } 
-    });
+      apiGet({action:"getConfig",setId}).then(d=>{ 
+        if(d.config) {
+          setTheme(buildTheme(d.config)); 
+          setCachedConfig(d.config); 
+        } 
+      });
       const pseudoSet={ id:setId, name:setId, total:0, passingScore:0, timeLimit:0 };
       if(isChallenge){
         setSet(pseudoSet); setScreen("login");
       } else {
-        const found=QUIZ_SETS.find(s=>s.id===setId);
-        if(found){ setSet(found); setScreen("login"); }
-        else setScreen("setSelect");
+        apiGet({ action: "getQuizSets" }).then(res => {
+          const sets = res.sets || [];
+          const found = sets.find((s: any) => s.id === setId);
+          if(found){ 
+            setSet(found); 
+            setScreen("login"); 
+          } else {
+            setScreen("setSelect");
+          }
+        }).catch(() => setScreen("setSelect"));
       }
     } else setScreen("setSelect");
   },[]);
-
-  useEffect(()=>{
-    if(screen!=="loading"||!selectedSet||!student||isChallenge) return;
+ // ── 1) โหลดข้อสอบโหมดปกติ (รองรับ Prefetch) ──────────────────
+  useEffect(() => {
+    if (screen !== "loading" || !selectedSet || !student || isChallenge) return;
     setLoadError("");
-    // 👇 ปรับแก้ไข Promise.all ตรงนี้
-  Promise.all([
-    apiGet({action:"getQuestions",setName:selectedSet.id}),
-    cachedConfig 
-      ? Promise.resolve({config:cachedConfig}) 
-      : apiGet({action:"getConfig",setId:selectedSet.id}),
-  ]).then(([qData,cfgData])=>{
-    if(!qData.questions?.length){ setLoadError("ไม่พบข้อสอบในชุด "+selectedSet.id); return; }
-    const shouldShuffle=cfgData.config?.shuffleQuestions!==false;
-    setQuestions(shouldShuffle
-      ?selectQuestions(qData.questions,selectedSet.total)
-      :orderQuestions(qData.questions,selectedSet.total));
-    setTheme(buildTheme(cfgData.config));
-    setScreen("quiz");
-  }).catch(()=>setLoadError("โหลดข้อสอบไม่ได้ กรุณาตรวจสอบการเชื่อมต่อ"));
-},[screen, cachedConfig]); // 👈 เพิ่ม cachedConfig ใน dependency array
+    const run = async () => {
+      try {
+        // ✅ ถ้า prefetch เสร็จแล้ว ใช้เลย ไม่ต้อง fetch ใหม่
+        const cached = prefetchedQuestionsRef.current;
+        const [qData, cfgData] = cached
+          ? cached
+          : await Promise.all([
+              apiGet({ action: "getQuestions", setName: selectedSet.id }),
+              cachedConfig
+                ? Promise.resolve({ config: cachedConfig })
+                : apiGet({ action: "getConfig", setId: selectedSet.id }),
+            ]);
+        
+        prefetchedQuestionsRef.current = null; // ล้าง cache หลังนำไปใช้แล้ว
 
-  useEffect(()=>{
-    if(screen!=="loading"||!selectedSet||!student||!isChallenge) return;
+        if (!qData.questions?.length) {
+          setLoadError("ไม่พบข้อสอบในชุด " + selectedSet.id);
+          return;
+        }
+
+        const shouldShuffle = cfgData.config?.shuffleQuestions !== false;
+        setQuestions(
+          shouldShuffle
+            ? selectQuestions(qData.questions, selectedSet.total)
+            : orderQuestions(qData.questions, selectedSet.total)
+        );
+        setTheme(buildTheme(cfgData.config));
+        setScreen("quiz");
+      } catch {
+        setLoadError("โหลดข้อสอบไม่ได้ กรุณาตรวจสอบการเชื่อมต่อ");
+      }
+    };
+    run();
+  }, [screen, cachedConfig]);
+
+  // ── 2) โหลดข้อสอบโหมด Challenge (คงเดิม) ──────────────────
+  useEffect(() => {
+    if (screen !== "loading" || !selectedSet || !student || !isChallenge) return;
     setLoadError("");
-    const setId=selectedSet.id;
-    apiGet({action:"getChallengeConfig",setId}).then(async cfgData=>{
-      const cc=cfgData.challengeConfig;
-      if(!cc){ setLoadError("ไม่พบ Challenge Config สำหรับ "+setId); return; }
+    const setId = selectedSet.id;
+    apiGet({ action: "getChallengeConfig", setId }).then(async cfgData => {
+      const cc = cfgData.challengeConfig;
+      if (!cc) { setLoadError("ไม่พบ Challenge Config สำหรับ " + setId); return; }
       setChallengeConfig(cc);
-      const setIds=cc.challengeSets||[];
-      const allQ=await Promise.all(
-        setIds.map(sid=>apiGet({action:"getQuestions",setName:sid}).then(d=>d.questions||[]))
+      const setIds = cc.challengeSets || [];
+      const allQ = await Promise.all(
+        setIds.map(sid => apiGet({ action: "getQuestions", setName: sid }).then(d => d.questions || []))
       );
-      const pool=shuffle(allQ.flat());
-      if(!pool.length){ setLoadError("ไม่พบข้อสอบในชุด Challenge"); return; }
+      const pool = shuffle(allQ.flat());
+      if (!pool.length) { setLoadError("ไม่พบข้อสอบในชุด Challenge"); return; }
       setChallengePool(pool);
       setScreen("challenge");
-    }).catch(()=>setLoadError("โหลด Challenge ไม่ได้ กรุณาตรวจสอบการเชื่อมต่อ"));
-  },[screen]);
-
+    }).catch(() => setLoadError("โหลด Challenge ไม่ได้ กรุณาตรวจสอบการเชื่อมต่อ"));
+  }, [screen]);
+  
   const goHome=()=>{
   setResult(null); setQuestions([]);
   setChallengeResult(null); setChallengePool([]);
@@ -1355,7 +1501,7 @@ export default function App() {
   const tc=theme.themeColor;
   const bg=theme.bgImageUrl
     ?`url(${theme.bgImageUrl}) center/cover fixed, ${theme.bgColor}`
-    :`radial-gradient(ellipse at 20% 50%,rgba(8,90,79,.45) 0%,transparent 60%),${theme.bgColor}`;
+    :`radial-gradient(ellipse at 20% 50%,rgba(55,32,8,.45) 0%,transparent 60%),${theme.bgColor}`;
 
   if(screen==="init") return <div style={{minHeight:"100vh",background:theme.bgColor}}/>;
 
@@ -1377,25 +1523,37 @@ export default function App() {
       `}</style>
       <div style={{minHeight:"100vh",fontFamily:"'Sarabun',sans-serif",background:bg}}>
         <Particles color={tc}/>
-        {screen==="setSelect"&&(
-          <SetSelectScreen onSelect={s=>{
-            setSet(s);
-            apiGet({action:"getConfig",setId:s.id}).then(d=>{ 
-      if(d.config) {
-        setTheme(buildTheme(d.config)); 
-        setCachedConfig(d.config); 
-        } 
-        });
-        setScreen("login");
-        }} theme={theme}/>
+       {screen==="setSelect"&&(
+          <SetSelectScreen 
+            quizSets={quizSets} // 👈 ส่ง quizSets ที่ดึงจากชีทเข้าไป
+            onSelect={s=>{
+              setSet(s);
+              apiGet({action:"getConfig",setId:s.id}).then(d=>{ 
+                if(d.config) {
+                  setTheme(buildTheme(d.config)); 
+                  setCachedConfig(d.config); 
+                } 
+              });
+              setScreen("login");
+            }} 
+            theme={theme}
+          />
         )}
         {screen==="login"&&selectedSet&&(
-          <LoginScreen set={selectedSet} theme={theme} isDirectLink={isDirectLink}
-            isChallenge={isChallenge} challengeConfig={challengeConfig}
-            challengeLabel={challengeConfig?.challengeName}
-            onConfirm={st=>{ setStudent(st); setScreen("loading"); }}
-            onBack={()=>{ setSet(null); setScreen("setSelect"); }}/>
-        )}
+  <LoginScreen 
+    set={selectedSet} 
+    theme={theme} 
+    isDirectLink={isDirectLink}
+    isChallenge={isChallenge} 
+    challengeConfig={challengeConfig}
+    challengeLabel={challengeConfig?.challengeName}
+    cachedConfig={cachedConfig}
+    prefetchedQuestionsRef={prefetchedQuestionsRef}
+    apiGet={apiGet}
+    onConfirm={st=>{ setStudent(st); setScreen("loading"); }}
+    onBack={()=>{ setSet(null); setScreen("setSelect"); }}
+  />
+)}
         {screen==="loading"&&(
           loadError
             ?<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
@@ -1434,3 +1592,4 @@ export default function App() {
     </>
   );
 }
+
