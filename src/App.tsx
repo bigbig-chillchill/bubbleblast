@@ -600,7 +600,7 @@ const lookup=async()=>{
           </p>
         </div>
         <label style={{display:"block",color:"#8b7355",fontSize:"11px",
-          fontFamily:"'Cinzel',serif",letterSpacing:"1px",marginBottom:"6px"}}>รหัสนักเรียน</label>
+          fontFamily:"'Cinzel',serif",letterSpacing:"1px",marginBottom:"6px"}}>Password</label>
         <div style={{display:"flex",gap:"8px",marginBottom:"16px"}}>
           <input value={sid} onChange={e=>{setSid(e.target.value);setStudent(null);setError("");}}
             onKeyDown={e=>e.key==="Enter"&&lookup()} placeholder="เช่น 691009" maxLength={10}
