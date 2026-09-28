@@ -113,7 +113,7 @@ function getModeFromUrl() {
 // - ถ้า Vercel Proxy (/api/proxy) พังหลายครั้งติดกัน จะสลับไปยิง
 //   Apps Script ตรงๆ อัตโนมัติ (ไม่ผ่าน cache) เพื่อให้ยังใช้งานได้
 const PROXY_URL         = "/api/proxy";
-const DIRECT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwtjTq25C0pURGGNsPMJ76iAbpzM3R9awJmswQUsQb1NrEG790gZc-_gsvPoXOTcCab/exec";
+const DIRECT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxGD7qVn_vixolcHeW2dzz3Yyqpi51_QHV2Ogyp3X8FNs4itQ45Gfh2bSI3fpYoF6z_IA/exec";
 const REQUEST_TIMEOUT_MS = 20000; // ใจเย็นขึ้นกว่าเดิม ยอมรอนานขึ้นแลกกับโอกาสสำเร็จสูงขึ้น
 
 let useDirectFallback = false;  // สลับเป็น true ถ้า proxy พังซ้ำๆ
